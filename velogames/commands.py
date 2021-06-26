@@ -1,8 +1,7 @@
 from velogames.parser import LeagueParser, TeamParser
-from velogames.containers import Team, Rider
 
 
-def teams(league_id):
+def _teams(league_id):
     league = LeagueParser(league_id)
 
     title = league.title()
@@ -21,7 +20,7 @@ def teams(league_id):
     return [team.dict() for team in teams]
 
 
-def riders(league_id):
+def _riders(league_id):
     league = LeagueParser(league_id)
 
     title = league.title()
@@ -41,7 +40,7 @@ def riders(league_id):
     return data
 
 
-def scores(league_id):
+def _scores(league_id):
     league = LeagueParser(league_id)
 
     title = league.title()
@@ -58,3 +57,10 @@ def scores(league_id):
         print(f"Parsed stage: {stage.name}")
 
     return data
+
+
+COMMANDS = {
+    "teams": _teams,
+    "riders": _riders,
+    "scores": _scores,
+}

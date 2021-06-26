@@ -1,32 +1,26 @@
 import argparse
 import csv
 
-from velogames import commands
-
-COMMANDS = {
-    "teams": commands.teams,
-    "riders": commands.riders,
-    "scores": commands.scores,
-}
+from velogames.commands import COMMANDS
 
 DESCRIPTION = """\
 Velogames data scraper
 
-Parses data from velogames.com and outputs it into a CSV file
-for further processing.
+parses data from velogames.com and outputs it into a CSV file
+for further processing
 
-Possible output commands:
+possible output commands:
 
-    teams:  Parse all teams in a league
-    riders: Parse all selected riders in the league
-    scores: Parse scores for all different events in the league
+  teams:  parse all teams in a league
+  riders: parse all selected riders in the league
+  scores: parse scores for all different events in the league
 """
 
 
 def to_csv(rows, path):
-    with open(path, "w", newline="", encoding="utf-8") as fd:
+    with open(path, "w", newline="", encoding="utf-8") as outfile:
         fields = rows[0].keys()
-        writer = csv.DictWriter(fd, fieldnames=fields)
+        writer = csv.DictWriter(outfile, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
 
@@ -42,9 +36,8 @@ def main():
     parser.add_argument("league_id", help="league ID from URL")
     parser.add_argument(
         "path",
-        help="output path (default: output.csv)",
+        help="output path (default: %(default)s)",
         nargs="?",
-        metavar="[path]",
         default="output.csv",
     )
 

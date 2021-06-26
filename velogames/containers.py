@@ -1,9 +1,6 @@
-from pydantic import BaseModel
+# pylint: disable=too-few-public-methods
 from typing import Optional
-
-
-def optional_int(val):
-    return int(val) if val is not None else val
+from pydantic import BaseModel
 
 
 class Stage(BaseModel):
@@ -57,3 +54,6 @@ class Rider(BaseModel):
     summit: int
     breakaway: int
     assist: int
+
+    def __lt__(self, other):
+        return self.points < other.points and self.name > other.name

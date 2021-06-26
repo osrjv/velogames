@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 from functools import lru_cache
 from urllib.parse import urlparse, parse_qs, urljoin
 import requests
@@ -145,21 +146,23 @@ class TeamParser:
             rider["ID"] = get_param(link, "rider")
             table.append(rider)
 
-        return [
-            Rider(
-                rider_id=rider["ID"],
-                name=rider["Rider"],
-                team=rider["Team"],
-                cost=rider["Cost"],
-                points=rider["Tot"],
-                stage=rider["Stg"],
-                general=rider["GC"],
-                daily=rider["PC"],
-                kom=rider["KOM"],
-                sprint=rider["Spr"],
-                summit=rider["Sum"],
-                breakaway=rider["Bky"],
-                assist=rider["Ass"],
+        riders = []
+        for row in table:
+            rider = Rider(
+                rider_id=row["ID"],
+                name=row["Rider"],
+                team=row["Team"],
+                cost=row["Cost"],
+                points=row["Tot"],
+                stage=row["Stg"],
+                general=row["GC"],
+                daily=row["PC"],
+                kom=row["KOM"],
+                sprint=row["Spr"],
+                summit=row["Sum"],
+                breakaway=row["Bky"],
+                assist=row["Ass"],
             )
-            for rider in table
-        ]
+            riders.append(rider)
+
+        return riders
