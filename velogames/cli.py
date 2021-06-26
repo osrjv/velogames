@@ -12,7 +12,7 @@ COMMANDS = {
 DESCRIPTION = """\
 Velogames data scraper
 
-Parses data from velogames.com and outputs it in a CSV file
+Parses data from velogames.com and outputs it into a CSV file
 for further processing.
 
 Possible output commands:
