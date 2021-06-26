@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 from typing import Optional
 
 
@@ -6,48 +6,54 @@ def optional_int(val):
     return int(val) if val is not None else val
 
 
-@dataclass
-class Stage:
+class Stage(BaseModel):
     name: str
-    gid: Optional[str]  # Game id
-    sid: Optional[str]  # Stage id
-
-    def __post_init__(self):
-        self.gid = optional_int(self.gid)
-        self.sid = optional_int(self.sid)
+    game_id: Optional[int]
+    stage_id: Optional[int]
 
     def __lt__(self, other):
-        return self.sid < other.sid
+        return self.stage_id < other.stage_id
 
 
-@dataclass
-class Standing:
+class Standing(BaseModel):
+    team_id: str
+
     name: str
     user: str
     score: int
-    tid: str  # Team id
-
-    def __post_init__(self):
-        self.score = int(self.score)
 
     def __lt__(self, other):
         return self.score < other.score
 
 
-@dataclass
-class Team:
+class Team(BaseModel):
+    team_id: str
+
     name: str
     user: str
     country: str
     cost: int
     score: int
     rank: int
-    tid: str  # Team id
-
-    def __post_init__(self):
-        self.cost = int(self.cost)
-        self.score = int(self.score)
-        self.rank = int(self.rank)
 
     def __lt__(self, other):
         return self.score < other.score
+
+
+class Rider(BaseModel):
+    rider_id: str
+
+    name: str
+    team: str
+    cost: int
+    points: int
+
+    # Points breakdown
+    stage: int
+    general: int
+    daily: int
+    kom: int
+    sprint: int
+    summit: int
+    breakaway: int
+    assist: int

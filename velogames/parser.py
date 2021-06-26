@@ -1,10 +1,8 @@
 from functools import lru_cache
 from urllib.parse import urlparse, parse_qs, urljoin
-
 import requests
 from bs4 import BeautifulSoup
-
-from velogames.containers import Stage, Standing, Team
+from velogames.containers import Stage, Standing, Team, Rider
 
 
 DEFAULT_URL = "https://www.velogames.com/velogame/2021/"
@@ -42,8 +40,8 @@ class LeagueParser:
     def url(self, stage=None):
         uri = f"leaguescores.php?league={self.lid}"
 
-        if stage is not None and stage.sid is not None:
-            uri += f"&ga={stage.gid}&st={stage.sid}"
+        if stage is not None and stage.stage_id is not None:
+            uri += f"&ga={stage.game_id}&st={stage.stage_id}"
 
         return urljoin(self._url, uri)
 
@@ -64,43 +62,43 @@ class LeagueParser:
             name = a.text
 
             link = a.get("href")
-            gid = get_param(link, "ga")
-            sid = get_param(link, "st")
+            game_id = get_param(link, "ga")
+            stage_id = get_param(link, "st")
 
-            stage = Stage(name, gid, sid)
+            stage = Stage(name=name, game_id=game_id, stage_id=stage_id)
             stages.append(stage)
 
         return stages
 
     def standings(self, stage=None):
-        standings = []
         parser = self.parser(stage)
-
         rows = parser.find(id="users").ul.find_all("li", recursive=False)
+
+        standings = []
         for li in rows:
             name = li.find(class_="name").text
             user = li.find(class_="born", recursive=False).text
             score = int(li.find(style="float:right").text)
 
             link = li.find(class_="name").a.get("href")
-            tid = get_param(link, "tid")
+            team_id = get_param(link, "tid")
 
-            standing = Standing(name, user, score, tid)
+            standing = Standing(team_id=team_id, name=name, user=user, score=score)
             standings.append(standing)
 
         return standings
 
 
 class TeamParser:
-    def __init__(self, tid: str, url: str = DEFAULT_URL):
-        self.tid = tid
+    def __init__(self, team_id: str, url: str = DEFAULT_URL):
+        self.team_id = team_id
         self._url = url
 
     def url(self, stage=None):
-        uri = f"teamroster.php?tid={self.tid}"
+        uri = f"teamroster.php?tid={self.team_id}"
 
-        if stage is not None and stage.sid is not None:
-            uri += f"&ga={stage.gid}&st={stage.sid}"
+        if stage is not None and stage.stage_id is not None:
+            uri += f"&ga={stage.game_id}&st={stage.stage_id}"
 
         return urljoin(self._url, uri)
 
@@ -110,37 +108,58 @@ class TeamParser:
 
     def overview(self, stage=None):
         parser = self.parser(stage)
-
         li = parser.find(class_="popular-posts").find_all("li")
 
-        name = li[0].span.find(text=True, recursive=False)
-        user = li[0].span.b.text
+        name = li[0].span.b.text
+        user = li[0].span.find(text=True, recursive=False)
         country = li[0].time.text
-
         cost = li[1].b.text
-
         score = li[2].b.text
         rank = li[2].time.text.split()[-1]
 
-        return Team(name, user, country, cost, score, rank, self.tid)
+        return Team(
+            team_id=self.team_id,
+            name=name,
+            user=user,
+            country=country,
+            cost=cost,
+            score=score,
+            rank=rank,
+        )
 
     def riders(self, stage=None):
         parser = self.parser(stage)
-
         tr = parser.find("table", class_="responsive").find_all("tr")
 
         header = [th.find(text=True, recursive=False) for th in tr[0].find_all("th")]
         header = [th for th in header if th.strip()]
         header.insert(0, "Rider")
 
-        rows = [[td.text for td in row.find_all("td")] for row in tr[1:]]
+        table = []
+        for element in tr[1:]:
+            td = element.find_all("td")
+            link = td[0].a.get("href")
+            values = [maybe_int(elem.text) for elem in td]
 
-        riders = []
-        for row in rows:
-            rider = {}
-            for idx, column in enumerate(header):
-                value = row[idx]
-                rider[column] = maybe_int(value)
-            riders.append(rider)
+            rider = {column: values[idx] for idx, column in enumerate(header)}
+            rider["ID"] = get_param(link, "rider")
+            table.append(rider)
 
-        return riders
+        return [
+            Rider(
+                rider_id=rider["ID"],
+                name=rider["Rider"],
+                team=rider["Team"],
+                cost=rider["Cost"],
+                points=rider["Tot"],
+                stage=rider["Stg"],
+                general=rider["GC"],
+                daily=rider["PC"],
+                kom=rider["KOM"],
+                sprint=rider["Spr"],
+                summit=rider["Sum"],
+                breakaway=rider["Bky"],
+                assist=rider["Ass"],
+            )
+            for rider in table
+        ]

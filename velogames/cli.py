@@ -1,31 +1,59 @@
-import click
-from velogames.parser import LeagueParser, TeamParser
+import argparse
+import csv
 
-LEAGUE_ID = "805863053"
+from velogames import commands
+
+COMMANDS = {
+    "teams": commands.teams,
+    "riders": commands.riders,
+    "scores": commands.scores,
+}
+
+DESCRIPTION = """\
+Velogames data scraper
+
+Parses data from velogames.com and outputs it in a CSV file
+for further processing.
+
+Possible output commands:
+
+    teams:  Parse all teams in a league
+    riders: Parse all selected riders in the league
+    scores: Parse scores for all different events in the league
+"""
 
 
-@click.command()
-def run():
-    league = LeagueParser(LEAGUE_ID)
+def to_csv(rows, path):
+    with open(path, "w", newline="", encoding="utf-8") as fd:
+        fields = rows[0].keys()
+        writer = csv.DictWriter(fd, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
 
-    title = league.title()
-    print(title)
+    print(f"Wrote {len(rows)} rows to file: {path}")
 
-    stages = league.stages()
-    print(stages)
 
-    standings = league.standings()
-    print(standings)
+def main():
+    parser = argparse.ArgumentParser(
+        description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter
+    )
 
-    for standing in standings:
-        team = TeamParser(standing.tid)
+    parser.add_argument("command", choices=COMMANDS, help="command")
+    parser.add_argument("league_id", help="league ID from URL")
+    parser.add_argument(
+        "path",
+        help="output path (default: output.csv)",
+        nargs="?",
+        metavar="[path]",
+        default="output.csv",
+    )
 
-        overview = team.overview()
-        print(overview)
+    args = parser.parse_args()
 
-        riders = team.riders()
-        print(riders)
+    func = COMMANDS[args.command]
+    data = func(args.league_id)
+    to_csv(data, args.path)
 
 
 if __name__ == "__main__":
-    run()
+    main()
