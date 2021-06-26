@@ -1,7 +1,6 @@
 import argparse
 import csv
-
-from velogames.commands import COMMANDS
+from velogames.commands import COMMANDS, Rows
 
 DESCRIPTION = """\
 Velogames data scraper
@@ -17,9 +16,10 @@ possible output commands:
 """
 
 
-def to_csv(rows, path):
+def to_csv(rows: Rows, path: str) -> None:
+    fields = list(rows[0].keys())
+
     with open(path, "w", newline="", encoding="utf-8") as outfile:
-        fields = rows[0].keys()
         writer = csv.DictWriter(outfile, fieldnames=fields)
         writer.writeheader()
         writer.writerows(rows)
@@ -27,7 +27,7 @@ def to_csv(rows, path):
     print(f"Wrote {len(rows)} rows to file: {path}")
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter
     )
@@ -36,15 +36,21 @@ def main():
     parser.add_argument("league_id", help="league ID from URL")
     parser.add_argument(
         "path",
-        help="output path (default: %(default)s)",
         nargs="?",
         default="output.csv",
+        help="output path (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-u",
+        "--url",
+        default="https://www.velogames.com/velogame/2021/",
+        help="base URL for parsed game (default: %(default)s)",
     )
 
     args = parser.parse_args()
-
     func = COMMANDS[args.command]
-    data = func(args.league_id)
+
+    data = func(args.url, args.league_id)
     to_csv(data, args.path)
 
 

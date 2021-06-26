@@ -1,8 +1,11 @@
+from typing import List, Dict, Any
 from velogames.parser import LeagueParser, TeamParser
 
+Rows = List[Dict[str, Any]]
 
-def _teams(league_id):
-    league = LeagueParser(league_id)
+
+def _teams(url: str, league_id: str) -> Rows:
+    league = LeagueParser(url, league_id)
 
     title = league.title()
     print(f"Parsing teams from league: {title}")
@@ -12,7 +15,7 @@ def _teams(league_id):
 
     teams = []
     for standing in standings:
-        team = TeamParser(standing.team_id)
+        team = TeamParser(url, standing.team_id)
         overview = team.overview()
         teams.append(overview)
         print(f"Parsed team: {overview.name}")
@@ -20,8 +23,8 @@ def _teams(league_id):
     return [team.dict() for team in teams]
 
 
-def _riders(league_id):
-    league = LeagueParser(league_id)
+def _riders(url: str, league_id: str) -> Rows:
+    league = LeagueParser(url, league_id)
 
     title = league.title()
     print(f"Parsing picked riders from league: {title}")
@@ -31,7 +34,7 @@ def _riders(league_id):
 
     data = []
     for standing in standings:
-        team = TeamParser(standing.team_id)
+        team = TeamParser(url, standing.team_id)
         overview = team.overview()
         riders = team.riders()
         data.extend([{"team_id": overview.team_id, **rider.dict()} for rider in riders])
@@ -40,8 +43,8 @@ def _riders(league_id):
     return data
 
 
-def _scores(league_id):
-    league = LeagueParser(league_id)
+def _scores(url: str, league_id: str) -> Rows:
+    league = LeagueParser(url, league_id)
 
     title = league.title()
     print(f"Parsing score breakdowns from league: {title}")

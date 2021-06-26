@@ -8,8 +8,16 @@ class Stage(BaseModel):
     game_id: Optional[int]
     stage_id: Optional[int]
 
-    def __lt__(self, other):
-        return self.stage_id < other.stage_id
+    def __lt__(self, other: "Stage") -> bool:
+        this = self.stage_id
+        that = other.stage_id
+
+        if this is None:
+            return True
+        if that is None:
+            return False
+
+        return this < that
 
 
 class Standing(BaseModel):
@@ -19,7 +27,7 @@ class Standing(BaseModel):
     user: str
     score: int
 
-    def __lt__(self, other):
+    def __lt__(self, other: "Standing") -> bool:
         return self.score < other.score
 
 
@@ -33,7 +41,7 @@ class Team(BaseModel):
     score: int
     rank: int
 
-    def __lt__(self, other):
+    def __lt__(self, other: "Team") -> bool:
         return self.score < other.score
 
 
@@ -55,5 +63,5 @@ class Rider(BaseModel):
     breakaway: int
     assist: int
 
-    def __lt__(self, other):
+    def __lt__(self, other: "Rider") -> bool:
         return self.points < other.points and self.name > other.name
