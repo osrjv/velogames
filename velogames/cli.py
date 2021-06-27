@@ -1,5 +1,6 @@
 import argparse
 import csv
+import logging
 from velogames.commands import COMMANDS, Rows
 
 DESCRIPTION = """\
@@ -24,16 +25,24 @@ def to_csv(rows: Rows, path: str) -> None:
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Wrote {len(rows)} rows to file: {path}")
+    logging.info("Wrote %d rows to file: %s", len(rows), path)
 
 
 def main() -> None:
+    # fmt: off
     parser = argparse.ArgumentParser(
-        description=DESCRIPTION, formatter_class=argparse.RawTextHelpFormatter
+        description=DESCRIPTION,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
-
-    parser.add_argument("command", choices=COMMANDS, help="command")
-    parser.add_argument("league_id", help="league ID from URL")
+    parser.add_argument(
+        "command",
+        choices=COMMANDS,
+        help="command",
+    )
+    parser.add_argument(
+        "league_id",
+        help="league ID from URL",
+    )
     parser.add_argument(
         "path",
         nargs="?",
@@ -46,11 +55,24 @@ def main() -> None:
         default="https://www.velogames.com/velogame/2021/",
         help="base URL for parsed game (default: %(default)s)",
     )
-
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="be more talkative",
+    )
     args = parser.parse_args()
-    func = COMMANDS[args.command]
+    # fmt: on
 
+    log_datefmt = "%H:%M:%S"
+    log_format = "%(asctime)s.%(msecs)03d › %(levelname)s › %(message)s"
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(level=log_level, format=log_format, datefmt=log_datefmt)
+
+    func = COMMANDS[args.command]
     data = func(args.url, args.league_id)
+
+    # TODO: Add other output formats
     to_csv(data, args.path)
 
 

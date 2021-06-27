@@ -1,3 +1,4 @@
+import logging
 from typing import List, Dict, Any
 from velogames.parser import LeagueParser, TeamParser
 
@@ -8,17 +9,18 @@ def _teams(url: str, league_id: str) -> Rows:
     league = LeagueParser(url, league_id)
 
     title = league.title()
-    print(f"Parsing teams from league: {title}")
+    logging.info("Parsing teams from league: %s", title)
 
     standings = league.standings()
-    print(f"Found {len(standings)} teams")
+    logging.info("Found %s teams", len(standings))
 
     teams = []
     for standing in standings:
         team = TeamParser(url, standing.team_id)
         overview = team.overview()
         teams.append(overview)
-        print(f"Parsed team: {overview.name}")
+
+        logging.info("Parsed team: %s", overview.name)
 
     return [team.dict() for team in teams]
 
@@ -27,18 +29,21 @@ def _riders(url: str, league_id: str) -> Rows:
     league = LeagueParser(url, league_id)
 
     title = league.title()
-    print(f"Parsing picked riders from league: {title}")
+    logging.info("Parsing picked riders from league: %s", title)
 
     standings = league.standings()
-    print(f"Found {len(standings)} teams")
+    logging.info("Found %s teams", len(standings))
 
     data = []
     for standing in standings:
         team = TeamParser(url, standing.team_id)
         overview = team.overview()
         riders = team.riders()
-        data.extend([{"team_id": overview.team_id, **rider.dict()} for rider in riders])
-        print(f"Parsed team: {overview.name}")
+
+        for rider in riders:
+            data.append({"team_id": overview.team_id, **rider.dict()})
+
+        logging.info("Parsed team: %s", overview.name)
 
     return data
 
@@ -47,17 +52,20 @@ def _scores(url: str, league_id: str) -> Rows:
     league = LeagueParser(url, league_id)
 
     title = league.title()
-    print(f"Parsing score breakdowns from league: {title}")
+    logging.info("Parsing score breakdowns from league: %s", title)
 
     stages = league.stages()
-    print(f"Found {len(stages)} stage options")
+    logging.info("Found %s stage options", len(stages))
 
     data = []
     for stage in stages:
+        stage_data = {"stage_id": stage.stage_id, "stage_name": stage.name}
         standings = league.standings(stage)
-        extras = {"stage_id": stage.stage_id, "stage_name": stage.name}
-        data.extend([{**extras, **standing.dict()} for standing in standings])
-        print(f"Parsed stage: {stage.name}")
+
+        for standing in standings:
+            data.append({**stage_data, **standing.dict()})
+
+        logging.info("Parsed stage: %s", stage.name)
 
     return data
 
