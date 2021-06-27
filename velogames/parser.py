@@ -116,7 +116,7 @@ class TeamParser:
         country = li[0].time.text
         cost = li[1].b.text
         score = li[2].b.text
-        rank = li[2].time.text.split()[-1]
+        rank = li[2].time.text.split()[-3]
 
         team = Team(
             team_id=self.team_id,
