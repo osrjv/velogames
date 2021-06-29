@@ -1,8 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
 block_cipher = None
 
 a = Analysis(
-    ["velogames\\cli.py"],
+    [str(os.path.join("velogames", "cli.py"))],
     pathex=[],
     binaries=[],
     datas=[],
