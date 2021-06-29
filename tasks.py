@@ -14,7 +14,7 @@ CLEAN_PATTERNS = [
 
 def poetry(ctx, command, **kwargs):
     kwargs.setdefault("echo", True)
-    ctx.run(f"poetry {command}", **kwargs)
+    return ctx.run(f"poetry {command}", **kwargs)
 
 
 @task
@@ -45,7 +45,7 @@ def format(ctx):
     poetry(ctx, "run black velogames")
 
 
-@task(install, check)
+@task(check)
 def build(ctx):
     """Build distributable packages"""
     poetry(ctx, "build -v")
@@ -59,3 +59,17 @@ def build(ctx):
 def publish(ctx):
     """Publish package to PyPI"""
     poetry(ctx, "publish -v")
+
+
+@task(check)
+def make_release(ctx):
+    """Tag a release from current commit"""
+    branch = ctx.run("git rev-parse --abbrev-ref HEAD")
+    if branch == "master":
+        raise RuntimeError("Current branch not 'master'")
+
+    version = poetry(ctx, "version -s").stdout.strip()
+
+    print(f"Tagging release: {version}")
+    ctx.run(f'git tag -a "{version}" -m "Release {version}"')
+    ctx.run(f"git push origin refs/tags/{version}")
