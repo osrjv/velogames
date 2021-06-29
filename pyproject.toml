@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "velogames"
-version = "0.1.0"
+version = "0.1.1"
 description = "Small tool for scraping Velogames data"
+repository = "https://github.com/osrjv/velogames"
 authors = ["Ossi Rajuvaara <ossi@robocorp.com>"]
+license = "Apache-2.0"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
