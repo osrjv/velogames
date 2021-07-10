@@ -3,7 +3,7 @@ import os
 block_cipher = None
 
 a = Analysis(
-    [str(os.path.join("velogames", "cli.py"))],
+    [str(os.path.join("velogames", "main.py"))],
     pathex=[],
     binaries=[],
     datas=[],

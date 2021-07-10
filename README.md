@@ -1,7 +1,6 @@
-# Velogames data scraper
+# Velogames CLI
 
-Parses data from [velogames.com](https://www.velogames.com/) and outputs it into
-a CSV file for further processing.
+Parses data from [velogames.com](https://www.velogames.com/) and outputs it into a CSV file for further processing.
 
 Possible output commands:
 
